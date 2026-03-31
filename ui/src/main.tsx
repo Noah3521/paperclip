@@ -16,6 +16,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { initPluginBridge } from "./plugins/bridge-init";
 import { PluginLauncherProvider } from "./plugins/launchers";
+import { LocaleProvider } from "./i18n/LocaleProvider";
 import "@mdxeditor/editor/style.css";
 import "./index.css";
 
@@ -39,29 +40,31 @@ const queryClient = new QueryClient({
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <BrowserRouter>
-          <CompanyProvider>
-            <ToastProvider>
-              <LiveUpdatesProvider>
-                <TooltipProvider>
-                  <BreadcrumbProvider>
-                    <SidebarProvider>
-                      <PanelProvider>
-                        <PluginLauncherProvider>
-                          <DialogProvider>
-                            <App />
-                          </DialogProvider>
-                        </PluginLauncherProvider>
-                      </PanelProvider>
-                    </SidebarProvider>
-                  </BreadcrumbProvider>
-                </TooltipProvider>
-              </LiveUpdatesProvider>
-            </ToastProvider>
-          </CompanyProvider>
-        </BrowserRouter>
-      </ThemeProvider>
+      <LocaleProvider>
+        <ThemeProvider>
+          <BrowserRouter>
+            <CompanyProvider>
+              <ToastProvider>
+                <LiveUpdatesProvider>
+                  <TooltipProvider>
+                    <BreadcrumbProvider>
+                      <SidebarProvider>
+                        <PanelProvider>
+                          <PluginLauncherProvider>
+                            <DialogProvider>
+                              <App />
+                            </DialogProvider>
+                          </PluginLauncherProvider>
+                        </PanelProvider>
+                      </SidebarProvider>
+                    </BreadcrumbProvider>
+                  </TooltipProvider>
+                </LiveUpdatesProvider>
+              </ToastProvider>
+            </CompanyProvider>
+          </BrowserRouter>
+        </ThemeProvider>
+      </LocaleProvider>
     </QueryClientProvider>
   </StrictMode>
 );
