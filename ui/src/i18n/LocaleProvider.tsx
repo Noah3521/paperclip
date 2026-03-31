@@ -17,6 +17,77 @@ import {
   type TranslationValues,
 } from "./index";
 import type { MessageKey } from "./messages/en";
+import { translateRawUiText } from "./raw";
+
+const originalTextContent = new WeakMap<Text, string>();
+const translatedAttributes = ["placeholder", "title", "aria-label", "alt"] as const;
+
+function shouldSkipTextNode(node: Text) {
+  const parent = node.parentElement;
+  if (!parent) return true;
+  const tag = parent.tagName;
+  return tag === "CODE" || tag === "PRE" || tag === "KBD" || tag === "SCRIPT" || tag === "STYLE";
+}
+
+function translateTextNode(node: Text, locale: Locale) {
+  if (shouldSkipTextNode(node)) return;
+  const current = node.textContent ?? "";
+  let source = originalTextContent.get(node);
+  if (source === undefined) {
+    source = current;
+    originalTextContent.set(node, source);
+  } else {
+    const translatedFromSource = translateRawUiText(source, "ko");
+    const reactUpdatedNode = current !== source && current !== translatedFromSource;
+    if (reactUpdatedNode) {
+      source = current;
+      originalTextContent.set(node, source);
+    }
+  }
+  const next = translateRawUiText(source, locale);
+  if (current !== next) {
+    node.textContent = next;
+  }
+}
+
+function translateElementAttributes(element: Element, locale: Locale) {
+  for (const attr of translatedAttributes) {
+    if (element.hasAttribute(attr) === false) continue;
+    const cacheAttr = `data-paperclip-i18n-${attr}`;
+    const current = element.getAttribute(attr) ?? "";
+    let source = element.getAttribute(cacheAttr);
+    if (source === null) {
+      source = current;
+      element.setAttribute(cacheAttr, source);
+    } else {
+      const translatedFromSource = translateRawUiText(source, "ko");
+      const reactUpdatedAttr = current !== source && current !== translatedFromSource;
+      if (reactUpdatedAttr) {
+        source = current;
+        element.setAttribute(cacheAttr, source);
+      }
+    }
+    const next = translateRawUiText(source, locale);
+    if (current !== next) {
+      element.setAttribute(attr, next);
+    }
+  }
+}
+
+function translateTree(root: Node, locale: Locale) {
+  if (root.nodeType === Node.TEXT_NODE) {
+    translateTextNode(root as Text, locale);
+    return;
+  }
+
+  if (root.nodeType !== Node.ELEMENT_NODE) return;
+
+  const element = root as Element;
+  translateElementAttributes(element, locale);
+  for (const child of element.childNodes) {
+    translateTree(child, locale);
+  }
+}
 
 interface LocaleContextValue {
   locale: Locale;
@@ -37,6 +108,39 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     } catch {
       // Ignore storage access failures in restricted environments.
     }
+  }, [locale]);
+
+  useEffect(() => {
+    const body = document.body;
+    if (!body) return;
+
+    translateTree(body, locale);
+
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === "characterData" && mutation.target.nodeType === Node.TEXT_NODE) {
+          translateTextNode(mutation.target as Text, locale);
+          continue;
+        }
+        if (mutation.type === "attributes" && mutation.target.nodeType === Node.ELEMENT_NODE) {
+          translateElementAttributes(mutation.target as Element, locale);
+          continue;
+        }
+        for (const node of mutation.addedNodes) {
+          translateTree(node, locale);
+        }
+      }
+    });
+
+    observer.observe(body, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+      attributes: true,
+      attributeFilter: [...translatedAttributes],
+    });
+
+    return () => observer.disconnect();
   }, [locale]);
 
   const setLocale = useCallback((nextLocale: Locale) => {

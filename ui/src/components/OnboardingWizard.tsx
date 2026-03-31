@@ -37,6 +37,7 @@ import {
 import { DEFAULT_CURSOR_LOCAL_MODEL } from "@paperclipai/adapter-cursor-local";
 import { DEFAULT_GEMINI_LOCAL_MODEL } from "@paperclipai/adapter-gemini-local";
 import { resolveRouteOnboardingOptions } from "../lib/onboarding-route";
+import { useRawT } from "../i18n/useRawT";
 import { AsciiArtAnimation } from "./AsciiArtAnimation";
 import { OpenCodeLogoIcon } from "./OpenCodeLogoIcon";
 import {
@@ -70,6 +71,7 @@ type AdapterType =
   | "http"
   | "openclaw_gateway";
 
+const DEFAULT_TASK_TITLE = "Hire your first engineer and create a hiring plan";
 const DEFAULT_TASK_DESCRIPTION = `You are the CEO. You set the direction for the company.
 
 - hire a founding engineer
@@ -79,6 +81,7 @@ const DEFAULT_TASK_DESCRIPTION = `You are the CEO. You set the direction for the
 export function OnboardingWizard() {
   const { onboardingOpen, onboardingOptions, closeOnboarding } = useDialog();
   const { companies, setSelectedCompanyId, loading: companiesLoading } = useCompany();
+  const rawT = useRawT();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const location = useLocation();
@@ -129,11 +132,9 @@ export function OnboardingWizard() {
   const [showMoreAdapters, setShowMoreAdapters] = useState(false);
 
   // Step 3
-  const [taskTitle, setTaskTitle] = useState(
-    "Hire your first engineer and create a hiring plan"
-  );
-  const [taskDescription, setTaskDescription] = useState(
-    DEFAULT_TASK_DESCRIPTION
+  const [taskTitle, setTaskTitle] = useState(() => rawT(DEFAULT_TASK_TITLE));
+  const [taskDescription, setTaskDescription] = useState(() =>
+    rawT(DEFAULT_TASK_DESCRIPTION)
   );
 
   // Auto-grow textarea for task description
@@ -299,8 +300,8 @@ export function OnboardingWizard() {
     setAdapterEnvLoading(false);
     setForceUnsetAnthropicApiKey(false);
     setUnsetAnthropicLoading(false);
-    setTaskTitle("Hire your first engineer and create a hiring plan");
-    setTaskDescription(DEFAULT_TASK_DESCRIPTION);
+    setTaskTitle(rawT(DEFAULT_TASK_TITLE));
+    setTaskDescription(rawT(DEFAULT_TASK_DESCRIPTION));
     setCreatedCompanyId(null);
     setCreatedCompanyPrefix(null);
     setCreatedCompanyGoalId(null);

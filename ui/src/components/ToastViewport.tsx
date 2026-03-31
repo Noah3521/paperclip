@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "@/lib/router";
 import { X } from "lucide-react";
 import { useToast, type ToastItem, type ToastTone } from "../context/ToastContext";
+import { useRawT } from "../i18n/useRawT";
 import { cn } from "../lib/utils";
 
 const toneClasses: Record<ToastTone, string> = {
@@ -26,6 +27,7 @@ function AnimatedToast({
   onDismiss: (id: string) => void;
 }) {
   const [visible, setVisible] = useState(false);
+  const rawT = useRawT();
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => setVisible(true));
@@ -45,10 +47,10 @@ function AnimatedToast({
       <div className="flex items-start gap-3 px-3 py-2.5">
         <span className={cn("mt-1 h-2 w-2 shrink-0 rounded-full", toneDotClasses[toast.tone])} />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold leading-5">{toast.title}</p>
+          <p className="text-sm font-semibold leading-5">{rawT(toast.title)}</p>
           {toast.body && (
             <p className="mt-1 text-xs leading-4 opacity-70">
-              {toast.body}
+              {rawT(toast.body)}
             </p>
           )}
           {toast.action && (
@@ -57,13 +59,13 @@ function AnimatedToast({
               onClick={() => onDismiss(toast.id)}
               className="mt-2 inline-flex text-xs font-medium underline underline-offset-4 hover:opacity-90"
             >
-              {toast.action.label}
+              {rawT(toast.action.label)}
             </Link>
           )}
         </div>
         <button
           type="button"
-          aria-label="Dismiss notification"
+          aria-label={rawT("Dismiss notification")}
           onClick={() => onDismiss(toast.id)}
           className="mt-0.5 shrink-0 rounded p-1 opacity-50 hover:bg-black/10 hover:opacity-100 dark:hover:bg-white/10"
         >

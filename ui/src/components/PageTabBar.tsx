@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSidebar } from "../context/SidebarContext";
+import { useRawT } from "../i18n/useRawT";
 
 export interface PageTabItem {
   value: string;
@@ -16,6 +17,7 @@ interface PageTabBarProps {
 
 export function PageTabBar({ items, value, onValueChange, align = "center" }: PageTabBarProps) {
   const { isMobile } = useSidebar();
+  const rawT = useRawT();
 
   if (isMobile && value !== undefined && onValueChange) {
     return (
@@ -26,7 +28,7 @@ export function PageTabBar({ items, value, onValueChange, align = "center" }: Pa
       >
         {items.map((item) => (
           <option key={item.value} value={item.value}>
-            {typeof item.label === "string" ? item.label : item.value}
+            {typeof item.label === "string" ? rawT(item.label) : rawT(item.value)}
           </option>
         ))}
       </select>
@@ -34,12 +36,12 @@ export function PageTabBar({ items, value, onValueChange, align = "center" }: Pa
   }
 
   return (
-    <TabsList variant="line" className={align === "start" ? "justify-start" : undefined}>
-      {items.map((item) => (
-        <TabsTrigger key={item.value} value={item.value}>
-          {item.label}
-        </TabsTrigger>
-      ))}
-    </TabsList>
+      <TabsList variant="line" className={align === "start" ? "justify-start" : undefined}>
+        {items.map((item) => (
+          <TabsTrigger key={item.value} value={item.value}>
+            {typeof item.label === "string" ? rawT(item.label) : item.label}
+          </TabsTrigger>
+        ))}
+      </TabsList>
   );
 }

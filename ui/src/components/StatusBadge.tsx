@@ -1,7 +1,10 @@
 import { cn } from "../lib/utils";
 import { statusBadge, statusBadgeDefault } from "../lib/status-colors";
+import { useRawT } from "../i18n/useRawT";
 
 export function StatusBadge({ status }: { status: string }) {
+  const rawT = useRawT();
+
   return (
     <span
       className={cn(
@@ -9,7 +12,7 @@ export function StatusBadge({ status }: { status: string }) {
         statusBadge[status] ?? statusBadgeDefault
       )}
     >
-      {status.replace("_", " ")}
+      {rawT(status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()))}
     </span>
   );
 }
